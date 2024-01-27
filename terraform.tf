@@ -1,34 +1,27 @@
 resource "aws_eks_cluster" "eks_cluster" {
   name     = "eks-spot-cluster"
-  role_arn = aws_iam_role.eks_cluster.arn
-  version  = "1.21"  # Set your desired Kubernetes version
+  region   = "us-east-1"
 
-  vpc_config {
-    subnet_ids = ["subnet-0eff86e19581e95ec"]
-  }
-}
+  managed_node_groups = [
+    {
+      name = "spot"
 
-resource "aws_eks_node_group" "spot_nodes" {
-  cluster_name    = aws_eks_cluster.eks_cluster.name
-  node_group_name = "spot"
+      instance_types = ["t3.medium"]
+      spot_instance_pools = [
+        {
+          max_price = "0.1" # Set the maximum price for spot instances
+        }
+      ]
 
-  node_role_arn = aws_iam_role.eks_node_group.arn
-  subnet_ids    = ["subnet-0eff86e19581e95ec"]
+      min_size     = 3
+      desired_size = 3
+      max_size     = 3
 
-  scaling_config {
-    desired_size = 3
-    max_size     = 5
-    min_size     = 1
-  }
+      availability_zones = ["us-east-1d"]
 
-  instance_types = ["t3.medium"]
-  key_name       = "chandra"  # Replace this with your keypair exists in AWS
-}
-
-resource "aws_iam_role" "eks_cluster" {
-  name = "eks_cluster"
-}
-
-resource "aws_iam_role" "eks_node_group" {
-  name = "eks_node_group"
+      ssh = {
+        public_key = file("~/chandra") # Replace this with the path to your public key file
+      }
+    }
+  ]
 }
