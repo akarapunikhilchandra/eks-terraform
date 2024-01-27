@@ -41,7 +41,6 @@ resource "aws_launch_configuration" "spot" {
   name_prefix     = "eks-spot-cluster-spot-"
   image_id        = data.aws_ami.eks_node.id
   instance_type   = "m5.large"
-  key_name        = aws_key_pair.chandra.key_name
   iam_instance_profile = aws_iam_instance_profile.node.name
   security_groups = [aws_security_group.node.id]
   # user_data_base64 = base64gz("${file("userdata.sh")}")
