@@ -1,8 +1,3 @@
-resource "aws_key_pair" "chandra" {
-  key_name   = "chandra"
-  public_key = "~/chandra" # replace this with your public SSH key
-}
-
 resource "aws_iam_role" "node" {
   name = "eks-spot-cluster-node"
 
