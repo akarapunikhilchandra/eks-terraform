@@ -1,7 +1,3 @@
-provider "aws" {
-  region = "us-east-1"
-}
-
 resource "aws_eks_cluster" "eks-spot-cluster" {
   name     = "eks-spot-cluster"
   region   = "us-east-1"
