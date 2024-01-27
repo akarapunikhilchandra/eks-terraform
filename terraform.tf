@@ -20,8 +20,8 @@ module "eks" {
   }
 
   vpc_id                   = "vpc-021a2ac87501570e4"
-  subnet_ids               = ["subnet-0eff86e19581e95ec", "subnet-0b062e7252a2101ca"]  # Replace with correct subnet ID
-  control_plane_subnet_ids = ["subnet-0eff86e19581e95ec", "subnet-0b062e7252a2101ca"]  # Replace with correct subnet ID
+  subnet_ids               = ["subnet-0eff86e19581e95ec", "subnet-0b062e7252a2101ca"]  
+  control_plane_subnet_ids = ["subnet-0eff86e19581e95ec", "subnet-0b062e7252a2101ca"] 
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
@@ -31,10 +31,10 @@ module "eks" {
   eks_managed_node_groups = {
     default = {
       min_size     = 1
-      max_size     = 3
-      desired_size = 3
+      max_size     = 1
+      desired_size = 1
 
-      instance_types = ["m5.large"]
+      instance_types = ["t3.medium"]
       azs            = ["us-east-1a", "us-east-1d"]
       capacity_type  = "SPOT"
     }
@@ -67,7 +67,7 @@ resource "aws_lb_listener" "my_listener" {
     }
   }
 
-  ssl_policy      = "ELBSecurityPolicy-2016-08"
-  certificate_arn = "arn:aws:acm:us-east-1:767398108107:certificate/6e931858-c773-4dbe-a54e-17696cc76d63"
+  ssl_policy      = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn = "arn:aws:acm:us-east-1:767398108107:certificate/3a32a50c-8f1f-43fb-be6b-cdb4e501120b"
 }
 
