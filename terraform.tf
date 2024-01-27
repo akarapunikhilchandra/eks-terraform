@@ -1,23 +1,18 @@
-provider "eksctl" {
-  version = "0.1.0"
-}
+module "eks" {
+  source          = "terraform-aws-modules/eks/aws"
+  cluster_name    = "eks-spot-cluster"
+  subnets         = ["subnet-0eff86e19581e95ec"]
+  vpc_id          = "vpc-021a2ac87501570e4"
+  cluster_version = "1.21"  # Set your desired Kubernetes version
 
-resource "eksctl_cluster" "eks_spot_cluster" {
-  metadata = {
-    name   = "eks-spot-cluster"
-    region = "us-east-1"
+  node_groups = {
+    spot = {
+      desired_capacity = 3
+      max_capacity     = 5
+      min_capacity     = 1
+
+      key_name = "chandra"  # Replace this with your keypair exists in AWS
+      instance_type = "t3.medium"
+    }
   }
-
-  managed_node_groups = [
-    {
-      name               = "spot"
-      instance_type      = "t3.medium"
-      spot               = true
-      availability_zones = ["us-east-1d"]
-      desired_capacity   = 3
-      ssh                = {
-        public_key_name = "chandra" # replace this with your keypair exists in AWS
-      }
-    },
-  ]
 }
