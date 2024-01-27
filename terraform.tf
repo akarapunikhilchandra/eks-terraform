@@ -50,15 +50,15 @@ resource "aws_launch_configuration" "spot" {
   }
 }
 
-data "aws_ami" "eks_node" {
-  filter {
-    name   = "name"
-    values = ["amazon-eks-node-${aws_iam_role.node.name}-*"]
-  }
+# data "aws_ami" "eks_node" {
+#   filter {
+#     name   = "name"
+#     values = ["amazon-eks-node-${aws_iam_role.node.name}-*"]
+#   }
 
-  most_recent = true
-  owners      = ["767398108107"] # Amazon EKS AMI account ID
-}
+#   most_recent = true
+#   owners      = ["767398108107"] # Amazon EKS AMI account ID
+# }
 
 resource "aws_autoscaling_group" "spot" {
   name                      = "eks-spot-cluster-spot"
