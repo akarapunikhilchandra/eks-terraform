@@ -37,7 +37,7 @@ resource "aws_iam_instance_profile" "node" {
 
 resource "aws_launch_configuration" "spot" {
   name_prefix     = "eks-spot-cluster-spot-"
-  image_id        = data.aws_ami.eks_node.id
+  image_id        = "ami-0f3c7d07486cad139"
   instance_type   = "m5.large"
   iam_instance_profile = aws_iam_instance_profile.node.name
   security_groups = [aws_security_group.node.id]
@@ -49,16 +49,6 @@ resource "aws_launch_configuration" "spot" {
     create_before_destroy = true
   }
 }
-
-# data "aws_ami" "eks_node" {
-#   filter {
-#     name   = "name"
-#     values = ["amazon-eks-node-${aws_iam_role.node.name}-*"]
-#   }
-
-#   most_recent = true
-#   owners      = ["767398108107"] # Amazon EKS AMI account ID
-# }
 
 resource "aws_autoscaling_group" "spot" {
   name                      = "eks-spot-cluster-spot"
