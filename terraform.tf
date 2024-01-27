@@ -22,6 +22,7 @@ module "eks" {
   vpc_id                   = "vpc-021a2ac87501570e4"
   subnet_ids               = ["subnet-0eff86e19581e95ec", "subnet-0eff86e19581e95ec"]
   control_plane_subnet_ids = ["subnet-0eff86e19581e95ec", "subnet-0eff86e19581e95ec"]
+  azs = ["us-east-1a", "us-east-1d"]
 
   # Self Managed Node Group(s)
   self_managed_node_group_defaults = {
