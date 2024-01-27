@@ -1,93 +1,126 @@
-resource "aws_eks_cluster" "eks-spot-cluster" {
-  name     = "eks-spot-cluster"
-  region   = "us-east-1"
+resource "aws_key_pair" "chandra" {
+  key_name   = "chandra"
+  public_key = "~/chandra" # replace this with your public SSH key
+}
 
-  launch_template {
-    id      = aws_launch_template.eks-spot-cluster.id
-    version = aws_launch_template.eks-spot-cluster.latest_version
-  }
+resource "aws_iam_role" "node" {
+  name = "eks-spot-cluster-node"
 
-  node_groups = [
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
     {
-      node_group_name = "spot"
-      subnets         = aws_subnet.private.*.id
-      min_size       = 3
-      max_size       = 3
-      desired_size   = 3
-      ami_type       = "AL2_x86_64"
-      disk_size      = 20
-      instance_types = ["m5.large"]
-      capacity_type  = "SPOT"
-      key_name       = "chandra"
-      ssh = {
-        enable_ssh_key = true
-      }
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
     }
   ]
 }
+EOF
+}
 
-resource "aws_launch_template" "eks-spot-cluster" {
-  name = "eks-spot-cluster"
+resource "aws_iam_role_policy_attachment" "node-AmazonEKSWorkerNodePolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  role       = aws_iam_role.node.name
+}
 
-  image_id               = data.aws_ami.eks-worker.id
-  instance_type          = "m5.large"
-  vpc_security_group_ids = [aws_security_group.eks-spot-cluster.id]
-  key_name               = "chandra"
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      volume_size = 20
-    }
+resource "aws_iam_role_policy_attachment" "node-AmazonEKS_CNI_Policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  role       = aws_iam_role.node.name
+}
+
+resource "aws_iam_role_policy_attachment" "node-AmazonEC2ContainerRegistryReadOnly" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  role       = aws_iam_role.node.name
+}
+
+resource "aws_iam_instance_profile" "node" {
+  name = "eks-spot-cluster-node"
+  role = aws_iam_role.node.name
+}
+
+resource "aws_launch_configuration" "spot" {
+  name_prefix     = "eks-spot-cluster-spot-"
+  image_id        = data.aws_ami.eks_node.id
+  instance_type   = "m5.large"
+  key_name        = aws_key_pair.chandra.key_name
+  iam_instance_profile = aws_iam_instance_profile.node.name
+  security_groups = [aws_security_group.node.id]
+  user_data_base64 = base64gz("${file("userdata.sh")}")
+
+  spot_price = "0.083" # replace this with your desired spot price
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
-data "aws_ami" "eks-worker" {
-  most_recent = true
-
+data "aws_ami" "eks_node" {
   filter {
     name   = "name"
-    values = ["amazon-eks-node-${aws_eks_cluster.eks-spot-cluster.version}-v*"]
+    values = ["amazon-eks-node-${aws_iam_role.node.name}-*"]
   }
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["602401143452"] # Amazon EKS AMI account ID
+  most_recent = true
+  owners      = ["767398108107"] # Amazon EKS AMI account ID
 }
 
-resource "aws_security_group" "eks-spot-cluster" {
-  name_prefix = "eks-spot-cluster"
+resource "aws_autoscaling_group" "spot" {
+  name                      = "eks-spot-cluster-spot"
+  launch_configuration      = aws_launch_configuration.spot.name
+  availability_zones        = ["us-east-1d"]
+  desired_capacity          = 3
+  min_size                  = 3
+  max_size                  = 3
+  health_check_grace_period = 300
+  health_check_type         = "EC2"
+  tag {
+    key                 = "Name"
+    value               = "eks-spot-cluster-node"
+    propagate_at_launch = true
+  }
+  tag {
+    key                 = "k8s.io/cluster-autoscaler/node-group"
+    value               = aws_iam_role.node.name
+    propagate_at_launch = true
+  }
+  tag {
+    key                 = "k8s-app"
+    value               = "cluster-autoscaler"
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_security_group" "node" {
+  name_prefix = "eks-spot-cluster-node-"
 
   ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
-
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
   }
 
-  vpc_id = aws_vpc.eks-spot-cluster.id
+  ingress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  vpc_id = data.aws_vpc.default.id
 }
 
-resource "aws_vpc" "eks-spot-cluster" {
-  cidr_block = "10.0.0.0/16"
-
-  tags = {
-    Name = "eks-spot-cluster"
-  }
-}
-
-resource "aws_subnet" "private" {
-  count = 3
-
-  cidr_block = "10.0.${count.index + 1}.0/24"
-  vpc_id     = aws_vpc.eks-spot-cluster.id
-
-  tags = {
-    Name = "eks-spot-cluster-private-${count.index + 1}"
-  }
+data "aws_vpc" "default" {
+  default = true
 }
