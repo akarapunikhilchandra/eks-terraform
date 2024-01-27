@@ -20,8 +20,8 @@ module "eks" {
   }
 
   vpc_id                   = "vpc-021a2ac87501570e4"
-  subnet_ids               = ["subnet-0eff86e19581e95ec", "subnet-xxxxxxxxxxxxxxxxx"]  # Replace with correct subnet ID
-  control_plane_subnet_ids = ["subnet-0eff86e19581e95ec", "subnet-xxxxxxxxxxxxxxxxx"]  # Replace with correct subnet ID
+  subnet_ids               = ["subnet-0eff86e19581e95ec", "subnet-0b062e7252a2101ca"]  # Replace with correct subnet ID
+  control_plane_subnet_ids = ["subnet-0eff86e19581e95ec", "subnet-0b062e7252a2101ca"]  # Replace with correct subnet ID
 
   # Self Managed Node Group(s)
   self_managed_node_group_defaults = {
