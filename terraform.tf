@@ -68,6 +68,6 @@ resource "aws_lb_listener" "my_listener" {
   }
 
   ssl_policy      = "ELBSecurityPolicy-2016-08"
-  certificate_arn = "arn:aws:acm:your-region:767398108107:certificate/your-acm-certificate-arn"
+  certificate_arn = "arn:aws:acm:us-east-1:767398108107:certificate/6e931858-c773-4dbe-a54e-17696cc76d63"
 }
 
