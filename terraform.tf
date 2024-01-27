@@ -44,12 +44,30 @@ module "eks" {
     Environment = "dev"
     Terraform   = "true"
   }
-  
-  enable_https = true
-
-  alb_acm_certificate_arn = "arn:aws:acm:your-region:767398108107:certificate/your-acm-certificate-arn"
-
-  alb_subnets = ["subnet-0eff86e19581e95ec", "subnet-0b062e7252a2101ca"]
-
-  alb_security_group_ids = ["	sg-0db1ca467783b6be6"]  # Replace with your security group ID
 }
+resource "aws_lb" "my_alb" {
+  name               = "my-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = ["sg-0db1ca467783b6be6"]
+  subnets            = ["subnet-0eff86e19581e95ec", "subnet-0b062e7252a2101ca"]
+}
+
+resource "aws_lb_listener" "my_listener" {
+  load_balancer_arn = aws_lb.my_alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+
+  default_action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      status_code  = "200"
+      message_body = "OK"
+    }
+  }
+
+  ssl_policy      = "ELBSecurityPolicy-2016-08"
+  certificate_arn = "arn:aws:acm:your-region:767398108107:certificate/your-acm-certificate-arn"
+}
+
