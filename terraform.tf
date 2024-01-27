@@ -44,4 +44,12 @@ module "eks" {
     Environment = "dev"
     Terraform   = "true"
   }
+  
+  enable_https = true
+
+  alb_acm_certificate_arn = "arn:aws:acm:your-region:767398108107:certificate/your-acm-certificate-arn"
+
+  alb_subnets = ["subnet-0eff86e19581e95ec", "subnet-0b062e7252a2101ca"]
+
+  alb_security_group_ids = ["	sg-0db1ca467783b6be6"]  # Replace with your security group ID
 }
