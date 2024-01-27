@@ -32,9 +32,9 @@ module "eks" {
     default = {
       min_size     = 1
       max_size     = 3
-      desired_size = 1
+      desired_size = 3
 
-      instance_types = ["t3.medium"]
+      instance_types = ["m5.large"]
       azs            = ["us-east-1a", "us-east-1d"]
       capacity_type  = "SPOT"
     }
