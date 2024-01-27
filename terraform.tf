@@ -20,8 +20,8 @@ module "eks" {
   }
 
   vpc_id                   = "vpc-021a2ac87501570e4"
-  subnet_ids               = ["subnet-0eff86e19581e95ec", "subnet-0eff86e19581e95ec"]
-  control_plane_subnet_ids = ["subnet-0eff86e19581e95ec", "subnet-0eff86e19581e95ec"]
+  subnet_ids               = ["subnet-0eff86e19581e95ec", "subnet-xxxxxxxxxxxxxxxxx"]  # Replace with correct subnet ID
+  control_plane_subnet_ids = ["subnet-0eff86e19581e95ec", "subnet-xxxxxxxxxxxxxxxxx"]  # Replace with correct subnet ID
 
   # Self Managed Node Group(s)
   self_managed_node_group_defaults = {
@@ -37,7 +37,7 @@ module "eks" {
       name         = "mixed-1"
       max_size     = 5
       desired_size = 2
-      azs = ["us-east-1a", "us-east-1d"]
+      azs          = ["us-east-1a", "us-east-1d"]
 
       use_mixed_instances_policy = true
       mixed_instances_policy = {
@@ -74,7 +74,7 @@ module "eks" {
       desired_size = 1
 
       instance_types = ["t3.medium"]
-      azs = ["us-east-1a", "us-east-1d"]
+      azs            = ["us-east-1a", "us-east-1d"]
       capacity_type  = "SPOT"
     }
   }
