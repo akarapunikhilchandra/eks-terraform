@@ -69,5 +69,6 @@ resource "aws_lb_listener" "my_listener" {
 
   ssl_policy      = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn = "arn:aws:acm:us-east-1:767398108107:certificate/3a32a50c-8f1f-43fb-be6b-cdb4e501120b"
+  depends_on = [aws_lb.my_alb]
 }
 
