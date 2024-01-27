@@ -49,7 +49,7 @@ resource "aws_launch_configuration" "spot" {
   key_name        = aws_key_pair.chandra.key_name
   iam_instance_profile = aws_iam_instance_profile.node.name
   security_groups = [aws_security_group.node.id]
-  user_data_base64 = base64gz("${file("userdata.sh")}")
+  # user_data_base64 = base64gz("${file("userdata.sh")}")
 
   spot_price = "0.083" # replace this with your desired spot price
 
