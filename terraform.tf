@@ -11,7 +11,7 @@ resource "eksctl_cluster" "eks_spot_cluster" {
   managed_node_groups = [
     {
       name               = "spot"
-      instance_type      = "m5.large"
+      instance_type      = "t3.medium"
       spot               = true
       availability_zones = ["us-east-1d"]
       desired_capacity   = 3
